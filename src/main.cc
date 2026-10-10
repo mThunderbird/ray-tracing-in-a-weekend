@@ -8,10 +8,26 @@
 #include <memory>
 #include <optional>
 
-Color ray_color(const Ray& ray, const Traceable& world) {
-    std::optional<Trace> trace = world.trace(ray, Interval{0, infinity});
+#include <glm/gtc/random.hpp>
+
+
+Vec random_on_hemisphere(const Vec& normal) {
+    Vec random_unit = glm::sphericalRand(1.0);
+    if(glm::dot(random_unit, normal) > 0.0)
+        return random_unit;
+    else
+        return -random_unit;
+}
+
+Color ray_color(const Ray& ray, const Traceable& world, int depth) {
+    if (depth <= 0)
+        return Color(0, 0, 0);
+
+
+    std::optional<Trace> trace = world.trace(ray, Interval{0.001, infinity});
     if(trace.has_value()) {
-        return 0.5 * (trace->N + Color(1, 1, 1));
+        Vec direction = trace->N + glm::sphericalRand(1.0);
+        return 0.5 * ray_color(Ray(trace->p, direction), world, depth-1);
     }
 
     Vec unit_dir = glm::normalize(ray.direction());
@@ -33,6 +49,7 @@ int main() {
     double viewport_height = 2.0;
     double viewport_width = viewport_height * double(image_width) / image_height;
     int samples_per_pixel = 100;
+    int max_depth = 50;
     // Camera setup
     Camera camera(
         Point(0, 0, 0),
@@ -63,7 +80,7 @@ int main() {
                 double dv = double(j + random_double()) / image_height;
 
                 Ray r = camera.ray_through(du, dv);
-                pixel_color += ray_color(r, world);
+                pixel_color += ray_color(r, world, max_depth);
             }
             pixel_color /= samples_per_pixel;
             
