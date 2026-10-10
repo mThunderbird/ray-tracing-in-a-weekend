@@ -2,26 +2,16 @@
 #include "color.h"
 #include "Camera.h"
 #include <iostream>
-
-double hit_sphere(const Point& center, double radius, const Ray& ray) {
-    Vec co = ray.origin() - center;
-    double a = glm::dot(ray.direction(), ray.direction());
-    double b = 2 * glm::dot(ray.direction(), co);
-    double c = glm::dot(co, co) - radius * radius; 
-    
-    double D = b * b - 4 * a * c;
-    
-    return (D >= 0) ? (- b - glm::sqrt(D)) / (2.0 * a) : - 1;
-}
+#include <optional>
+#include "Sphere.h"
 
 Color ray_color(const Ray& r) {
 
-    Point center(0, 0, -1);
-    double radius = 0.5;
-    double t_hit = hit_sphere(center, radius, r);
+    Sphere sphere(Point{0, 0, -1}, 0.5);
+    std::optional<Trace> trace = sphere.trace(r, 0, 100);
 
-    if(t_hit > 0.0) {
-        Vec N = (r.at(t_hit) - center) / radius;
+    if(trace.has_value()) {
+        Vec N = trace->N;
         return 0.5 * Color(N.x + 1, N.y + 1, N.z + 1);
     }
 
