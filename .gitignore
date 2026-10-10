@@ -1,0 +1,7 @@
+/build/
+/out/
+CMakeUserPresets.json
+.cache/
+*.ppm
+image.png
+*.user

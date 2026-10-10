@@ -1,0 +1,6 @@
+CompileFlags:
+  CompilationDatabase: build
+  Add:
+    - --target=x86_64-w64-windows-gnu
+    - --gcc-toolchain=C:/Users/drago/AppData/Local/Microsoft/WinGet/Packages/BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe/mingw64
+    - -IC:/Projects/RayTracingInAWeekend/build/_deps/glm-src
