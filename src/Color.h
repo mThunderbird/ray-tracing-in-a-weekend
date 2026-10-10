@@ -1,8 +1,8 @@
 # pragma once
 
-#include <iostream>
 #include "Util.h"
 
+#include <iostream>
 
 inline void write_color(std::ostream& out, const Color& pixel_color) {
 

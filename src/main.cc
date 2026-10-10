@@ -1,21 +1,20 @@
-#include "Util.h"
-#include "color.h"
 #include "Camera.h"
-#include <iostream>
-#include <optional>
+#include "Color.h"
 #include "Sphere.h"
+#include "Util.h"
 
-Color ray_color(const Ray& r) {
+#include <algorithm>
+#include <iostream>
+#include <memory>
+#include <optional>
 
-    Sphere sphere(Point{0, 0, -1}, 0.5);
-    std::optional<Trace> trace = sphere.trace(r, 0, 100);
-
+Color ray_color(const Ray& ray, const Traceable& world) {
+    std::optional<Trace> trace = world.trace(ray, Interval{0, infinity});
     if(trace.has_value()) {
-        Vec N = trace->N;
-        return 0.5 * Color(N.x + 1, N.y + 1, N.z + 1);
+        return 0.5 * (trace->N + Color(1, 1, 1));
     }
 
-    Vec unit_dir = glm::normalize(r.direction());
+    Vec unit_dir = glm::normalize(ray.direction());
     double a = 0.5 * (unit_dir.y + 1.0);
     return (1.0 - a)*Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
 }
@@ -34,7 +33,7 @@ int main() {
     double viewport_height = 2.0;
     double viewport_width = viewport_height * double(image_width) / image_height;
 
-    // Create the camera
+    // Camera setup
     Camera camera(
         Point(0, 0, 0),
         Vec(0, 0, -1),
@@ -43,6 +42,11 @@ int main() {
         viewport_width,
         viewport_height
     );
+
+    // World 
+    TraceableList world;
+    world.add(std::make_shared<Sphere>(Point(0, 0, -1), 0.5));
+    world.add(std::make_shared<Sphere>(Point(0, -100.5, -1), 100));
 
 
     // Render
@@ -54,7 +58,7 @@ int main() {
         for(int i = 0; i < image_width; i ++) {
             
             Ray r = camera.ray_through(double(i) / image_width, double(j)  / image_height);
-            auto pixel_color = ray_color(r);
+            auto pixel_color = ray_color(r, world);
             write_color(std::cout, pixel_color);
         }
     }

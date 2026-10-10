@@ -9,7 +9,7 @@ class Sphere : public Traceable {
         center(center),
         radius(radius) {}
 
-    std::optional<Trace> trace(const Ray& ray, double tmin, double tmax) const override {
+    std::optional<Trace> trace(const Ray& ray, Interval t_interval) const override {
         Vec co = ray.origin() - center;
         double a = glm::dot(ray.direction(), ray.direction());
         double b = glm::dot(ray.direction(), co);
@@ -20,9 +20,9 @@ class Sphere : public Traceable {
         if(D < 0) return std::nullopt;
 
         double t = (- b - glm::sqrt(D)) / a;
-        if(t <= tmin || t >= tmax) {
+        if(t_interval.surrounds(t) == false ) {
             t = (- b + glm::sqrt(D)) / a;
-            if(t <= tmin || t >= tmax) {
+            if(t_interval.surrounds(t) == false) {
                 return std::nullopt;
             }
         }

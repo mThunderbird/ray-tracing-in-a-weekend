@@ -105,7 +105,13 @@ def write_png(width: int, height: int, rgb: bytes) -> None:
     png += chunk(b"IHDR", struct.pack(">IIBBBBB", width, height, 8, 2, 0, 0, 0))
     png += chunk(b"IDAT", zlib.compress(bytes(raw), 9))
     png += chunk(b"IEND", b"")
-    PNG_PATH.write_bytes(png)
+    temporary = PNG_PATH.with_suffix(".png.tmp")
+    temporary.write_bytes(png)
+    try:
+        temporary.replace(PNG_PATH)
+    except OSError:
+        temporary.unlink(missing_ok=True)
+        sys.exit(f"Close {PNG_PATH.name} in the editor or image viewer, then run this again.")
 
 
 def main() -> None:
