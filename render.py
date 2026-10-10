@@ -4,6 +4,12 @@ PowerShell's > operator rewrites program output as UTF-16, which image
 viewers reject. This script reads the program's raw stdout instead.
 
     python render.py
+    python render.py release
+    python render.py default
+
+The preset named below is used when you run the script with no argument.
+"default" is the Debug build. "release" is the fast one. CMake rebuilds
+only what changed, and reconfigures when you switch presets.
 """
 
 import os
@@ -18,11 +24,42 @@ BUILD = ROOT / "build"
 PPM_PATH = ROOT / "image.ppm"
 PNG_PATH = ROOT / "image.png"
 
+# "default" (Debug) or "release".
+PRESET = "default"
 
-def cmake_build() -> None:
-    if not (BUILD / "build.ninja").exists() and not (BUILD / "CMakeCache.txt").exists():
-        subprocess.run(["cmake", "-S", str(ROOT), "-B", str(BUILD)], check=True)
-    subprocess.run(["cmake", "--build", str(BUILD)], check=True)
+PRESET_BUILD_TYPE = {
+    "default": "Debug",
+    "release": "Release",
+}
+
+
+def chosen_preset() -> str:
+    if len(sys.argv) == 1:
+        preset = PRESET
+    elif len(sys.argv) == 2:
+        preset = sys.argv[1]
+    else:
+        sys.exit("Usage: python render.py [default|release]")
+    if preset not in PRESET_BUILD_TYPE:
+        sys.exit(f"Unknown preset {preset!r}. Use 'default' or 'release'.")
+    return preset
+
+
+def cached_build_type() -> str | None:
+    cache = BUILD / "CMakeCache.txt"
+    if not cache.exists():
+        return None
+    prefix = "CMAKE_BUILD_TYPE:"
+    for line in cache.read_text(encoding="utf-8", errors="replace").splitlines():
+        if line.startswith(prefix):
+            return line.split("=", 1)[1].strip()
+    return None
+
+
+def cmake_build(preset: str) -> None:
+    if cached_build_type() != PRESET_BUILD_TYPE[preset]:
+        subprocess.run(["cmake", "--preset", preset], check=True, cwd=ROOT)
+    subprocess.run(["cmake", "--build", "--preset", preset], check=True, cwd=ROOT)
 
 
 def raytracer_path() -> Path:
@@ -116,7 +153,7 @@ def write_png(width: int, height: int, rgb: bytes) -> None:
 
 def main() -> None:
     os.chdir(ROOT)
-    cmake_build()
+    cmake_build(chosen_preset())
     width, height, rgb = parse_ppm(render_ppm())
     write_png(width, height, rgb)
     print(f"Wrote {PNG_PATH.name} ({width}x{height})")
