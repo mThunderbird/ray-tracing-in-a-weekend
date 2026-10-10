@@ -1,5 +1,8 @@
 # pragma once
 
+#include "glm/gtc/epsilon.hpp"
+#include "glm/vector_relational.hpp"
+#include <cmath>
 #include <limits>
 #include <numbers>
 
@@ -23,3 +26,7 @@ inline double random_double() {
 using Color = glm::dvec3;
 using Point = glm::dvec3;
 using Vec = glm::dvec3;
+
+inline bool near_zero(const Vec& v) {
+    return glm::all(glm::epsilonEqual(v, Vec(0.0), 1e-8));
+}

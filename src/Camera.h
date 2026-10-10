@@ -19,7 +19,9 @@ class Camera {
         up(glm::normalize(up)),
         f(focal_length),
         viewport_width(viewport_width),
-        viewport_height(viewport_height) {}
+        viewport_height(viewport_height) {
+          prepare_for_frame();
+        }
     
     Ray ray_through(double du, double dv) {
 

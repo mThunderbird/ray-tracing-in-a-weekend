@@ -1,3 +1,4 @@
+#include "Material.h"
 #include "Ray.h"
 #include "Traceable.h"
 #include "Util.h"
@@ -5,9 +6,10 @@
 
 class Sphere : public Traceable {
   public:
-    Sphere(Point center, double radius) :
+    Sphere(Point center, double radius, std::shared_ptr<Material> material) :
         center(center),
-        radius(radius) {}
+        radius(radius),
+        mat(material) {}
 
     std::optional<Trace> trace(const Ray& ray, Interval t_interval) const override {
         Vec co = ray.origin() - center;
@@ -28,10 +30,12 @@ class Sphere : public Traceable {
         }
 
         Point intersection = ray.at(t);
-        return Trace{intersection, (intersection - center) / radius, t};
+        return Trace{intersection, (intersection - center) / radius, t, mat};
     }
 
   private:
     Point center;
     double radius;
+
+    std::shared_ptr<Material> mat;
 };

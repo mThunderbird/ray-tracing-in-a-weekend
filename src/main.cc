@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Color.h"
+#include "Material.h"
 #include "Sphere.h"
 #include "Util.h"
 
@@ -10,24 +11,19 @@
 
 #include <glm/gtc/random.hpp>
 
-
-Vec random_on_hemisphere(const Vec& normal) {
-    Vec random_unit = glm::sphericalRand(1.0);
-    if(glm::dot(random_unit, normal) > 0.0)
-        return random_unit;
-    else
-        return -random_unit;
-}
-
 Color ray_color(const Ray& ray, const Traceable& world, int depth) {
     if (depth <= 0)
         return Color(0, 0, 0);
 
 
     std::optional<Trace> trace = world.trace(ray, Interval{0.001, infinity});
-    if(trace.has_value()) {
-        Vec direction = trace->N + glm::sphericalRand(1.0);
-        return 0.5 * ray_color(Ray(trace->p, direction), world, depth-1);
+    if(trace) {
+        
+        std::optional<Scatter> scatter = trace->mat->scatter(ray, trace.value());
+        if(scatter) {
+            return scatter->attenuation * ray_color(scatter->ray, world, depth-1);
+        }
+        return Color(0, 0, 0);
     }
 
     Vec unit_dir = glm::normalize(ray.direction());
@@ -62,8 +58,15 @@ int main() {
 
     // World 
     TraceableList world;
-    world.add(std::make_shared<Sphere>(Point(0, 0, -1), 0.5));
-    world.add(std::make_shared<Sphere>(Point(0, -100.5, -1), 100));
+    auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
+    auto material_center = std::make_shared<Lambertian>(Color(0.1, 0.2, 0.5));
+    auto material_left   = std::make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.3);
+    auto material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.2), 1.0);
+
+    world.add(std::make_shared<Sphere>(Point( 0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(std::make_shared<Sphere>(Point( 0.0,    0.0, -1.2),   0.5, material_center));
+    world.add(std::make_shared<Sphere>(Point(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(std::make_shared<Sphere>(Point( 1.0,    0.0, -1.0),   0.5, material_right));
 
 
     // Render

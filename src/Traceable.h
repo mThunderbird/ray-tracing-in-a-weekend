@@ -1,3 +1,5 @@
+# pragma  once 
+
 #include "Util.h"
 #include "Ray.h"
 #include <optional>
@@ -5,10 +7,12 @@
 #include <memory>
 #include "Interval.h"
 
+class Material; // Trust me bro there will be a class Material
 struct Trace {
     Point p;
     Vec N;
     double t;
+    std::shared_ptr<Material> mat;
 };
 
 class Traceable {
