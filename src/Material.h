@@ -1,7 +1,7 @@
 # pragma once
 
 #include "Ray.h"
-#include "Traceable.h"
+#include "Trace.h"
 #include "Util.h"
 #include "glm/geometric.hpp"
 #include "glm/gtc/random.hpp"

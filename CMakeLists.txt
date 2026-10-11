@@ -15,10 +15,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glm)
 
-add_executable(raytracer src/main.cc)
+add_library(raytracing INTERFACE)
+target_include_directories(raytracing INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+target_link_libraries(raytracing INTERFACE glm::glm)
+target_compile_features(raytracing INTERFACE cxx_std_23)
 
-target_include_directories(raytracer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_link_libraries(raytracer PRIVATE glm::glm)
+add_executable(raytracer src/main.cc)
+target_link_libraries(raytracer PRIVATE raytracing)
 
 if(MSVC)
     target_compile_options(raytracer PRIVATE /W4 /permissive-)

@@ -1,34 +1,34 @@
 # pragma  once 
 
-#include "Util.h"
+#include "Interval.h"
 #include "Ray.h"
+#include "Trace.h"
+
+#include <memory>
 #include <optional>
 #include <vector>
-#include <memory>
-#include "Interval.h"
 
-class Material; // Trust me bro there will be a class Material
-struct Trace {
-    Point p;
-    Vec N;
-    double t;
-    std::shared_ptr<Material> mat;
-};
+class Renderer;
+class Scene;
 
 class Traceable {
+    friend class Renderer;
+    friend class Scene;
+
   public:
     virtual ~Traceable() = default;
 
+  private:
     virtual std::optional<Trace> trace(const Ray& ray, Interval t_interval) const = 0;
 };
 
-class TraceableList : public Traceable {
-    public:
-    std::vector<std::shared_ptr<Traceable>> objects;
-    TraceableList() {}
-
+class Scene : public Traceable {
+  public:
     void clear() { objects.clear(); }
     void add(std::shared_ptr<Traceable> object) { objects.push_back(object); }
+
+  private:
+    std::vector<std::shared_ptr<Traceable>> objects;
 
     std::optional<Trace> trace(const Ray& ray, Interval t_interval) const override {
      

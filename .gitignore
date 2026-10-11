@@ -4,6 +4,7 @@ CMakeUserPresets.json
 .cache/
 *.ppm
 image.png
+*.png
 image.png.tmp
 *.user
 __pycache__/

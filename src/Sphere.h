@@ -1,3 +1,5 @@
+# pragma once
+
 #include "Material.h"
 #include "Ray.h"
 #include "Traceable.h"
@@ -11,6 +13,7 @@ class Sphere : public Traceable {
         radius(radius),
         mat(material) {}
 
+  private:
     std::optional<Trace> trace(const Ray& ray, Interval t_interval) const override {
         Vec co = ray.origin() - center;
         double a = glm::dot(ray.direction(), ray.direction());
