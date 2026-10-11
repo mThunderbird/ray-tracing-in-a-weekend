@@ -42,30 +42,36 @@ int main() {
     int image_width = std::max(aspect_ratio * image_height, 1.0);
 
     // Calculate viewport with true aspect ratio
-    double viewport_height = 2.0;
-    double viewport_width = viewport_height * double(image_width) / image_height;
     int samples_per_pixel = 100;
     int max_depth = 50;
     // Camera setup
+    Point lookfrom(-2, 2, 1);
+    Point lookat(0, 0, -1);
+    Vec forward = lookat - lookfrom;
+    Vec world_up(0, 1, 0);
+    Vec up = world_up - glm::dot(world_up, glm::normalize(forward)) * glm::normalize(forward);
+
     Camera camera(
-        Point(0, 0, 0),
-        Vec(0, 0, -1),
-        Vec(0, 1, 0),
+        lookfrom,
+        forward,
+        up,
         1.0,
-        viewport_width,
-        viewport_height
+        50,
+        double(image_width) / image_height
     );
 
     // World 
     TraceableList world;
     auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
     auto material_center = std::make_shared<Lambertian>(Color(0.1, 0.2, 0.5));
-    auto material_left   = std::make_shared<Metal>(Color(0.8, 0.8, 0.8), 0.3);
+    auto material_left   = std::make_shared<Dielectric>(Color(0.4, 0.4, 0.2), 1.5);
+    auto material_bubble = std::make_shared<Dielectric>(Color(1, 0.3, 0.3), 1.00 / 1.50);
     auto material_right  = std::make_shared<Metal>(Color(0.8, 0.6, 0.2), 1.0);
 
     world.add(std::make_shared<Sphere>(Point( 0.0, -100.5, -1.0), 100.0, material_ground));
     world.add(std::make_shared<Sphere>(Point( 0.0,    0.0, -1.2),   0.5, material_center));
     world.add(std::make_shared<Sphere>(Point(-1.0,    0.0, -1.0),   0.5, material_left));
+    world.add(std::make_shared<Sphere>(Point(-1.0, 0.0, -1.0), 0.3, material_bubble));
     world.add(std::make_shared<Sphere>(Point( 1.0,    0.0, -1.0),   0.5, material_right));
 
 

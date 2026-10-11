@@ -5,6 +5,7 @@
 #include "Util.h"
 #include "glm/geometric.hpp"
 #include "glm/gtc/random.hpp"
+#include <cmath>
 #include <optional>
 
 struct Scatter {
@@ -92,4 +93,48 @@ class Metal : public Material {
   private:
     Color albedo;
     double fuzz;
+};
+
+class Dielectric : public Material {
+  public:
+    Dielectric(const Color& albedo, double refraction_index):
+      albedo(albedo),
+      refraction_index(refraction_index) {}
+
+    std::optional<Scatter> scatter(const Ray& in, const Trace& trace) const override {
+
+      Vec unit_dir = glm::normalize(in.direction());
+      bool front_face = dot(unit_dir, trace.N) < 0;
+      Vec normal = front_face ? trace.N : - trace.N;
+      double ratio = front_face ? 1.0 / refraction_index : refraction_index;
+      
+      double cos_theta = glm::dot(-unit_dir, normal);
+      double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
+
+      bool cannot_refract = ratio * sin_theta > 1.0 ? true : false;
+      Vec scatter_direction;
+      if (cannot_refract || reflectance(cos_theta, ratio) > random_double()) {
+        scatter_direction = glm::reflect(unit_dir, trace.N);
+      }
+      else {
+        scatter_direction = glm::refract(unit_dir, normal, ratio);
+      }
+
+      return Scatter(
+        Ray(trace.p, scatter_direction),
+        albedo
+      );
+    }
+  
+  private:
+    Color albedo;
+    double refraction_index;
+
+    static double reflectance(double cos, double refraction_index) {
+      // Schlick's approximation for reflectance
+
+      double r0 = (1 - refraction_index) / (1 + refraction_index);
+      r0 = r0 * r0;
+      return r0 + (1 - r0) * std::pow((1 - cos), 5);
+    }
 };

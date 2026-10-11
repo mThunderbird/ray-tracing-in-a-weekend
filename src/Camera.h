@@ -2,6 +2,8 @@
 
 #include "Util.h"
 #include "Ray.h"
+#include "glm/trigonometric.hpp"
+#include <cmath>
 #include <vector>
 
 class Camera {
@@ -12,14 +14,18 @@ class Camera {
         const Vec& forward, 
         const Vec& up, 
         double focal_length, 
-        double viewport_width, 
-        double viewport_height) :
+        double vertical_field_of_view_degrees, 
+        double aspect_ratio) :
         center(center),
         forward(glm::normalize(forward)),
         up(glm::normalize(up)),
         f(focal_length),
-        viewport_width(viewport_width),
-        viewport_height(viewport_height) {
+        vfov(degrees_to_radians(vertical_field_of_view_degrees)),
+        aspect(aspect_ratio) {
+
+          viewport_height = 2 * f * glm::tan(vfov / 2);
+          viewport_width = aspect_ratio * viewport_height;
+
           prepare_for_frame();
         }
     
@@ -45,15 +51,18 @@ class Camera {
     bool is_prepared_for_frame = false;
 
     double f;
-    double viewport_width;
+    double vfov;
+    double aspect;
+
     double viewport_height;
+    double viewport_width;
 
     void prepare_for_frame() {
       Vec left = glm::normalize(glm::cross(up, forward));
 
-      Point top_left = forward * f + left * viewport_width / 2.0 + up * viewport_height / 2.0;
-      Point top_right = forward * f - left * viewport_width / 2.0 + up * viewport_height / 2.0;
-      Point bot_left = forward * f + left * viewport_width / 2.0 - up * viewport_height / 2.0;
+      Point top_left = center + forward * f + left * viewport_width / 2.0 + up * viewport_height / 2.0;
+      Point top_right = center + forward * f - left * viewport_width / 2.0 + up * viewport_height / 2.0;
+      Point bot_left = center + forward * f + left * viewport_width / 2.0 - up * viewport_height / 2.0;
 
       cached_top_left = top_left;
       cached_horziontal = top_right - top_left;
