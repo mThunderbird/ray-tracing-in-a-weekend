@@ -55,8 +55,9 @@ int main() {
         lookfrom,
         forward,
         up,
-        1.0,
-        50,
+        glm::length(forward),
+        20,
+        10,
         double(image_width) / image_height
     );
 
