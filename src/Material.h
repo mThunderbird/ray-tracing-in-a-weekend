@@ -34,7 +34,7 @@ class Diffuse : public Material {
       Vec scatter_direction = random_on_hemisphere(trace.N);
 
       return Scatter(
-        Ray(trace.p, scatter_direction),
+        Ray(trace.p, scatter_direction, in.time()),
         albedo);
     }
 
@@ -63,7 +63,7 @@ class Lambertian : public Material {
         scatter_direction = trace.N;
       
       return Scatter(
-        Ray(trace.p, scatter_direction),
+        Ray(trace.p, scatter_direction, in.time()),
         albedo);
     }
 
@@ -86,7 +86,7 @@ class Metal : public Material {
         return std::nullopt;
 
       return Scatter(
-        Ray(trace.p, scatter_direction),
+        Ray(trace.p, scatter_direction, in.time()),
         albedo);
     }
 
@@ -121,7 +121,7 @@ class Dielectric : public Material {
       }
 
       return Scatter(
-        Ray(trace.p, scatter_direction),
+        Ray(trace.p, scatter_direction, in.time()),
         albedo
       );
     }
