@@ -1,7 +1,10 @@
 # pragma once
 
+#include "BVH.h"
 #include "Renderer.h"
 #include "Sphere.h"
+#include "Traceable.h"
+#include <memory>
 
 class RayTracer {
   public:
@@ -11,8 +14,12 @@ class RayTracer {
         image_height(image_height) {}
 
     Image render(const Scene& scene) {
+
+        Scene optimized_scene;
+        optimized_scene.add(std::make_shared<BVHNode>(scene));
+
         Image image(image_width, image_height);
-        renderer.render(camera, scene, image);
+        renderer.render(camera, optimized_scene, image);
         return image;
     }
 

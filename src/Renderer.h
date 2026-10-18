@@ -42,9 +42,9 @@ class Renderer {
         if (depth <= 0)
             return Color(0, 0, 0);
 
-        std::optional<Trace> trace = scene.trace(ray, Interval{0.001, infinity});
-        if (trace) {
-            std::optional<Scatter> scatter = trace->mat->scatter(ray, trace.value());
+        Trace trace;
+        if (scene.trace(ray, Interval{0.001, infinity}, trace)) {
+            std::optional<Scatter> scatter = trace.mat->scatter(ray, trace);
             if (scatter)
                 return scatter->attenuation * ray_color(scatter->ray, scene, depth - 1);
             return Color(0, 0, 0);

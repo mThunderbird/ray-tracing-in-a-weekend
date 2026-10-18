@@ -4,8 +4,6 @@
 #include <iostream>
 #include <memory>
 
-double random_double(double min, double max) { return min + (max - min) * random_double(); }
-
 Color random_color() { return Color(random_double(), random_double(), random_double()); }
 
 Color random_color(double min, double max) {

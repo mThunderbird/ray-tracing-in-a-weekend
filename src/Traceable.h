@@ -1,47 +1,57 @@
-# pragma  once 
+#pragma once
 
+#include "AABB.h"
 #include "Interval.h"
 #include "Ray.h"
 #include "Trace.h"
 
 #include <memory>
-#include <optional>
 #include <vector>
 
 class Renderer;
 class Scene;
+class BVHNode;
 
 class Traceable {
     friend class Renderer;
     friend class Scene;
+    friend class BVHNode;
 
   public:
     virtual ~Traceable() = default;
 
   private:
-    virtual std::optional<Trace> trace(const Ray& ray, Interval t_interval) const = 0;
+    virtual bool trace(const Ray& ray, Interval t_interval, Trace& trace) const = 0;
+    virtual AABB bounding_box() const = 0;
 };
 
 class Scene : public Traceable {
+  friend class BVHNode;
+  
   public:
     void clear() { objects.clear(); }
-    void add(std::shared_ptr<Traceable> object) { objects.push_back(object); }
+    void add(std::shared_ptr<Traceable> object) {
+        objects.push_back(object);
+        bbox = AABB(bbox, object->bounding_box());
+    }
 
-  private:
+    
+    private:
     std::vector<std::shared_ptr<Traceable>> objects;
+    AABB bbox;
 
-    std::optional<Trace> trace(const Ray& ray, Interval t_interval) const override {
-     
-        std::optional<Trace> trace = std::nullopt;
+    bool trace(const Ray& ray, Interval t_interval, Trace& trace) const override {
+        bool hit_anything = false;
 
-        for(const auto& object : objects) {
-            std::optional<Trace> tmp = object->trace(ray, t_interval);
-            if (tmp.has_value()) {
-                trace = tmp;
-                t_interval.max = tmp->t;        
+        for (const auto& object : objects) {
+            if (object->trace(ray, t_interval, trace)) {
+                hit_anything = true;
+                t_interval.max = trace.t;
             }
         }
 
-        return trace;
+        return hit_anything;
     }
+
+    AABB bounding_box() const override { return bbox; }
 };

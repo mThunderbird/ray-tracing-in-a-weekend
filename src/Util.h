@@ -17,10 +17,21 @@ inline double degrees_to_radians(double degrees) {
 }
 
 inline double random_double() {
+    // Returns random double in [0, 1)
     static std::uniform_real_distribution<double> U(0.0, 1.0);
     static std::mt19937 generator;
 
     return U(generator);
+}
+
+inline double random_double(double min, double max) {
+    // Returns random double in [min, max)
+    return  min + (max - min) * random_double();
+}
+
+inline int random_int(int min, int max) {
+    // Returns random int in [min, max]
+    return int(random_double(min, max + 1));
 }
 
 using Color = glm::dvec3;
